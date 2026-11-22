@@ -1,0 +1,20 @@
+name: Metrics
+on:
+  schedule: [{cron: "0 0 * * *"}]
+  workflow_dispatch:
+jobs:
+  github-metrics:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Skip quietly until the METRICS_TOKEN secret exists, so nightly runs don't fail
+      - id: token
+        run: echo "present=${{ secrets.METRICS_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - uses: lowlighter/metrics@latest
+        if: steps.token.outputs.present == 'true'
+        with:
+          token: ${{ secrets.METRICS_TOKEN }}
+          base: header, activity
+          plugin_isocalendar: yes
+          plugin_languages: yes
